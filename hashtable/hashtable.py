@@ -8,6 +8,7 @@ class HashTableEntry:
         self.next = None
 
 
+
 # Hash table can't have fewer than this many slots
 MIN_CAPACITY = 8
 
@@ -22,6 +23,10 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        self.store = [None]*capacity
+        self.capacity = capacity
+        self.size = 0
+
 
 
     def get_num_slots(self):
@@ -35,6 +40,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.capacity
+
 
 
     def get_load_factor(self):
@@ -44,6 +51,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # load factor is self.size / self.capacity
+        return (self.size / self.capacity)
 
 
     def fnv1(self, key):
@@ -54,7 +63,7 @@ class HashTable:
         """
 
         # Your code here
-
+        pass
 
     def djb2(self, key):
         """
@@ -63,6 +72,11 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
+        hash_var = 5381
+        #str_bytes = key.encode()
+        for b in key:
+            hash_var = (hash_var * 33)  + ord(b)
+        return hash_var
 
 
     def hash_index(self, key):
@@ -83,6 +97,26 @@ class HashTable:
         """
         # Your code here
 
+        index = self.hash_index(key)
+
+        # if nothing at index put value there
+        if self.store[index] == None:
+            self.store[index] = HashTableEntry(key, value)
+        # if something there create linked list add new value to head
+        else:
+            curr_head = self.store[index]
+            if curr_head.key == key:
+                curr_head.value = value
+            else:
+                new_entry = HashTableEntry(key, value)
+                new_entry.next = curr_head
+                self.store[index] = new_entry
+        self.size += 1
+        load_factor = self.get_load_factor()
+        if load_factor > .7:
+            self.resize(int(self.capacity*2))
+
+
 
     def delete(self, key):
         """
@@ -90,9 +124,41 @@ class HashTable:
 
         Print a warning if the key is not found.
 
+
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current = self.store[index]
+
+
+        # if nothing there it's deleted and it's good
+        if current == None:
+            pass
+        # if something there see if next value is none
+        else:
+            if current.key == key:
+                # if next value is not none prev needs to point to next
+                if current.next is not None:
+                    self.store[index] = current.next
+                # else index needs to point to None
+                else:
+                    self.store[index] = None
+
+            prev = current
+            current = current.next
+
+            while current is not None:
+                if current.key == key:
+                    prev.next = current.next
+                else:
+                    current = current.next
+            self.size -= 1
+            load_factor = self.get_load_factor()
+            if load_factor < .2:
+                self.resize(self.capacity//2)
+
+        
 
 
     def get(self, key):
@@ -104,6 +170,15 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+
+        current = self.store[index]
+        while current is not None:
+            if current.key == key:
+                return current.value
+            else:
+                current = current.next
+        return current
 
 
     def resize(self, new_capacity):
@@ -114,6 +189,15 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.capacity = new_capacity
+        self.size = 0
+        old_store = self.store
+        self.store = [None]*new_capacity
+        for e in old_store:
+            while e is not None:
+                self.put(e.key, e.value)
+                e = e.next
+
 
 
 

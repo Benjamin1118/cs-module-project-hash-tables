@@ -1,7 +1,16 @@
 def word_count(s):
     # Your code here
+    words = {}
+    ignore = '":;,.-+=/\|[]{}()*^&'
+    phrase = s.lower().split()
 
-
+    for i in phrase:
+        i = i.strip(ignore)
+        if i not in words and i != "":
+            words[i] = 1
+        elif i != "":
+            words[i] += 1
+    return words
 
 if __name__ == "__main__":
     print(word_count(""))
